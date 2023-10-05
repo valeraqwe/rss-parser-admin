@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Post;
 use Illuminate\Console\Command;
-use Spatie\Feed\Feed;
+use SimplePie;
 
 class ParseRSS extends Command
 {
@@ -27,15 +27,18 @@ class ParseRSS extends Command
      */
     public function handle(): void
     {
-        $feed = Feed::loadRss('https://lifehacker.com/rss');
+        $feed = new SimplePie();
+        $feed->set_feed_url('https://lifehacker.com/rss');
+        $feed->init();
+        $feed->handle_content_type();
 
-        foreach ($feed->item as $item) {
+        foreach ($feed->get_items() as $item) {
             Post::updateOrCreate(
-                ['link' => (string) $item->link],
+                ['link' => $item->get_permalink()],
                 [
-                    'title' => (string) $item->title,
-                    'description' => (string) $item->description,
-                    'published_at' => (string) $item->pubDate
+                    'title' => $item->get_title(),
+                    'description' => $item->get_description(),
+                    'published_at' => $item->get_date('Y-m-d H:i:s')
                 ]
             );
         }
