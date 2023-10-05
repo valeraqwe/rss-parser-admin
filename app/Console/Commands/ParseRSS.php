@@ -32,7 +32,14 @@ class ParseRSS extends Command
         $feed->handle_content_type();
 
         foreach ($feed->get_items() as $item) {
-            // Здесь будет код для сохранения каждой записи в базу данных
+            Post::updateOrCreate(
+                ['link' => $item->get_permalink()],
+                [
+                    'title' => $item->get_title(),
+                    'description' => $item->get_description(),
+                    'published_at' => $item->get_date('Y-m-d H:i:s')
+                ]
+            );
         }
     }
 
